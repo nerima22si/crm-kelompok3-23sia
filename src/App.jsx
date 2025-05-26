@@ -9,6 +9,8 @@ function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Dashboard />}/>
         <Route path="/penjualan" element={<SalesManagement />}/>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/pelanggan" element={<SalesManagement />} />
       </Route>
     </Routes>
   );
