@@ -4,6 +4,9 @@ import Dashboard from "./pages/Dashboard";
 import SalesManagement from "./pages/SalesManagement";
 import FeedbackKomplain from "./pages/FeedbackKomplain";
 import LoyaltyMembership from "./pages/LoyaltyMembership";
+import MembershipInfo from "./pages/MembershipInfo";
+import CustomerFeedback from "./pages/CustomerFeedback";
+
 
 function App() {
   return (
@@ -13,6 +16,8 @@ function App() {
         <Route path="/penjualan" element={<SalesManagement />}/>
         <Route path="/feedback" element={<FeedbackKomplain />}/>
         <Route path="/loyalty" element={<LoyaltyMembership />}/>
+        <Route path="/membership" element={<MembershipInfo />}/>
+        <Route path="/customerFeedback" element={<CustomerFeedback/>}/>
       </Route>
     </Routes>
   );

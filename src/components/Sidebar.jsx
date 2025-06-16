@@ -1,29 +1,34 @@
 import {
   LayoutDashboard,
-  Users, // untuk pelanggan
-  ShoppingCart, // untuk penjualan
-  Box, // untuk produk
-  BarChart2, // untuk laporan
-  Settings, // untuk pengaturan akun
-  User,
+  Users,          // untuk pelanggan / loyalty
+  ShoppingCart,   // untuk penjualan
+  Box,            // untuk produk
+  BarChart2,      // untuk laporan
+  Settings,       // untuk pengaturan akun
   LogIn,
   UserPlus,
+  BadgeCheck,     // untuk membership
+  MessageCircle,
+  Megaphone,  // untuk feedback
 } from "lucide-react";
+
 import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
-  { name: "Dashboard", icon: <LayoutDashboard />, path: "/" },
-  { name: "Produk", icon: <Box />, path: "/produk" },
-  { name: "Laporan", icon: <BarChart2 />, path: "/laporan" },
-  { name: "Penjualan", icon: <ShoppingCart />, path: "/penjualan" },
-    { name: "Loyalty", icon: <BarChart2 />, path: "/loyalty" },
-  { name: "Feedback", icon: <ShoppingCart />, path: "/feedback" },
+  { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/" },
+  { name: "Produk", icon: <Box size={20} />, path: "/produk" },
+  { name: "Laporan", icon: <BarChart2 size={20} />, path: "/laporan" },
+  { name: "Penjualan", icon: <ShoppingCart size={20} />, path: "/penjualan" },
+  { name: "Loyalty", icon: <Users size={20} />, path: "/loyalty" },
+  { name: "Feedback", icon: <MessageCircle size={20} />, path: "/feedback" },
+  { name: "Membership", icon: <BadgeCheck size={20} />, path: "/membership" },
+  { name: "Customer Feedback", icon: <Megaphone size={20} />, path: "/customerFeedback" },
 ];
 
 const accountItems = [
-  { name: "Pengaturan Akun", icon: <Settings />, path: "/akun" },
-  { name: "Sign In", icon: <LogIn />, path: "/signin" },
-  { name: "Sign Up", icon: <UserPlus />, path: "/signup" },
+  { name: "Pengaturan Akun", icon: <Settings size={20} />, path: "/akun" },
+  { name: "Sign In", icon: <LogIn size={20} />, path: "/signin" },
+  { name: "Sign Up", icon: <UserPlus size={20} />, path: "/signup" },
 ];
 
 const Sidebar = () => {
@@ -34,6 +39,7 @@ const Sidebar = () => {
   return (
     <aside className="bg-white w-64 h-screen shadow-lg px-4 py-6 hidden md:block">
       <div className="text-xl font-bold mb-8 text-purple-700">UMKM CRM</div>
+      
       <nav className="space-y-1">
         {menuItems.map((item) => (
           <Link
