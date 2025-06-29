@@ -1,96 +1,187 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import { Pie } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const CampaignManagement = () => {
-  const [campaign, setCampaign] = useState({
-    name: "",
-    start: "",
-    end: "",
-    target: "",
+  // 🔸 Data Dummy Kampanye
+  const [campaigns, setCampaigns] = useState([
+    {
+      id: 1,
+      name: 'Promo Akhir Tahun',
+      type: 'Diskon 25%',
+      start: '2025-11-01',
+      end: '2025-12-31',
+      target: 'Member Loyal',
+      status: 'Berjalan',
+      ctr: 15.2,
+      openRate: 48,
+      response: 320,
+    },
+    {
+      id: 2,
+      name: 'Kampanye Member Baru',
+      type: 'Gratis Ongkir',
+      start: '2025-06-01',
+      end: '2025-06-15',
+      target: 'Member Baru',
+      status: 'Selesai',
+      ctr: 22.1,
+      openRate: 60,
+      response: 510,
+    },
+  ]);
+
+  // 🔸 State Form Input Kampanye Baru
+  const [form, setForm] = useState({
+    name: '',
+    type: '',
+    start: '',
+    end: '',
+    target: '',
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCampaign((prev) => ({ ...prev, [name]: value }));
+  // 🔸 Statistik Kampanye
+  const total = campaigns.length;
+  const sukses = campaigns.filter(c => c.status === 'Selesai').length;
+  const berjalan = total - sukses;
+
+  const pieData = {
+    labels: ['Selesai', 'Berjalan'],
+    datasets: [
+      {
+        data: [sukses, berjalan],
+        backgroundColor: ['#4b2e2b', '#d3a170'],
+      },
+    ],
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Campaign Submitted:", campaign);
-    alert("Kampanye berhasil disimpan!");
-    // reset form
-    setCampaign({ name: "", start: "", end: "", target: "" });
+    const newCampaign = {
+      id: campaigns.length + 1,
+      name: form.name,
+      type: form.type,
+      start: form.start,
+      end: form.end,
+      target: form.target,
+      status: 'Berjalan',
+      ctr: 0,
+      openRate: 0,
+      response: 0,
+    };
+    setCampaigns([...campaigns, newCampaign]);
+    setForm({ name: '', type: '', start: '', end: '', target: '' });
   };
 
   return (
-    <div className="min-h-screen bg-[#fffaf5] p-6 text-[#5c3a1c]">
-      <h1 className="text-3xl font-bold mb-6 border-b border-[#e0cfc0] pb-2">
-        📢 Campaign Management
-      </h1>
+    <div className="p-6 bg-[#fdf6f1] rounded-xl shadow">
+      <h2 className="text-2xl font-bold text-[#4b2e2b] mb-6">Campaign Management</h2>
 
-      <div className="bg-white max-w-2xl mx-auto p-6 rounded-xl shadow">
-        <h2 className="text-xl font-semibold mb-4">📋 Form Kampanye Promosi</h2>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block mb-1 font-medium">Nama Kampanye</label>
-            <input
-              type="text"
-              name="name"
-              value={campaign.name}
-              onChange={handleChange}
-              required
-              className="w-full p-3 border border-[#e0cfc0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a261]"
-              placeholder="Contoh: Promo Lebaran Ceria"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block mb-1 font-medium">Waktu Mulai</label>
-              <input
-                type="date"
-                name="start"
-                value={campaign.start}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-[#e0cfc0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a261]"
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">Waktu Selesai</label>
-              <input
-                type="date"
-                name="end"
-                value={campaign.end}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-[#e0cfc0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a261]"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">Target / Tujuan</label>
-            <textarea
-              name="target"
-              value={campaign.target}
-              onChange={handleChange}
-              required
-              rows="4"
-              className="w-full p-3 border border-[#e0cfc0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f4a261]"
-              placeholder="Contoh: Pelanggan member aktif, umur 20-35 tahun, area Jabodetabek"
-            ></textarea>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-[#f4a261] hover:bg-[#e76f51] text-white px-6 py-3 rounded-lg font-semibold transition"
-            >
-              Simpan Kampanye
-            </button>
-          </div>
+      {/* 🔶 Form Kampanye */}
+      <div className="bg-white p-4 rounded-lg shadow mb-8">
+        <h3 className="text-lg font-semibold text-[#4b2e2b] mb-4">Buat Kampanye Baru</h3>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <input
+            type="text"
+            placeholder="Nama Kampanye"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="border border-[#d3a170] px-3 py-2 rounded"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Jenis Promo (Diskon/Gratis)"
+            value={form.type}
+            onChange={(e) => setForm({ ...form, type: e.target.value })}
+            className="border border-[#d3a170] px-3 py-2 rounded"
+            required
+          />
+          <select
+            value={form.target}
+            onChange={(e) => setForm({ ...form, target: e.target.value })}
+            className="border border-[#d3a170] px-3 py-2 rounded"
+            required
+          >
+            <option value="">Pilih Target Pelanggan</option>
+            <option value="Loyal">Loyal</option>
+            <option value="Baru">Baru</option>
+            <option value="Tidak Aktif">Tidak Aktif</option>
+            <option value="Semua Pelanggan">Semua Pelanggan</option>
+          </select>
+          <input
+            type="date"
+            value={form.start}
+            onChange={(e) => setForm({ ...form, start: e.target.value })}
+            className="border border-[#d3a170] px-3 py-2 rounded"
+            required
+          />
+          <input
+            type="date"
+            value={form.end}
+            onChange={(e) => setForm({ ...form, end: e.target.value })}
+            className="border border-[#d3a170] px-3 py-2 rounded"
+            required
+          />
+          <button type="submit" className="bg-[#d3a170] text-white py-2 rounded hover:bg-[#a35f2a]">
+            Tambah Kampanye
+          </button>
         </form>
+      </div>
+
+      {/* 🔶 Statistik + Pie Chart */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white p-4 rounded shadow text-center">
+          <h3 className="text-[#4b2e2b] font-semibold mb-2">Statistik Kampanye</h3>
+          <Pie data={pieData} />
+        </div>
+        <div className="bg-white p-4 rounded shadow text-center">
+          <h3 className="text-[#4b2e2b] font-semibold mb-2">Ringkasan</h3>
+          <p className="text-[#4b2e2b]">Total Kampanye: <strong>{total}</strong></p>
+          <p className="text-green-700">Selesai: {sukses}</p>
+          <p className="text-yellow-600">Berjalan: {berjalan}</p>
+        </div>
+      </div>
+
+      {/* 🔶 Tabel Kampanye */}
+      <div className="overflow-x-auto bg-white rounded shadow">
+        <table className="min-w-full text-sm">
+          <thead className="bg-[#f3e5dc] text-[#4b2e2b]">
+            <tr>
+              <th className="p-3 text-left">ID</th>
+              <th className="p-3 text-left">Nama</th>
+              <th className="p-3 text-left">Jenis</th>
+              <th className="p-3 text-left">Durasi</th>
+              <th className="p-3 text-left">Target</th>
+              <th className="p-3 text-left">Status</th>
+              <th className="p-3 text-left">CTR</th>
+              <th className="p-3 text-left">Open Rate</th>
+              <th className="p-3 text-left">Respons</th>
+            </tr>
+          </thead>
+          <tbody>
+            {campaigns.map(c => (
+              <tr key={c.id} className="border-t hover:bg-[#fff8f4] text-[#4b2e2b]">
+                <td className="p-2">{c.id}</td>
+                <td className="p-2">{c.name}</td>
+                <td className="p-2">{c.type}</td>
+                <td className="p-2">{c.start} – {c.end}</td>
+                <td className="p-2">{c.target}</td>
+                <td className="p-2">{c.status}</td>
+                <td className="p-2">{c.ctr}%</td>
+                <td className="p-2">{c.openRate}%</td>
+                <td className="p-2">{c.response}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
