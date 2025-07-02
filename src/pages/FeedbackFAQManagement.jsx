@@ -22,6 +22,7 @@ const FeedbackFAQAdmin = () => {
 
   const [newFAQ, setNewFAQ] = useState({ question: '', answer: '' });
   const [replyModal, setReplyModal] = useState({ open: false, feedbackId: null, replyText: '' });
+  const [showFAQForm, setShowFAQForm] = useState(false);
 
   const handleAddFAQ = () => {
     if (newFAQ.question && newFAQ.answer) {
@@ -47,7 +48,7 @@ const FeedbackFAQAdmin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fff6ec] to-[#fdf6f1] py-10 px-6">
+    <div className="min-h-screen bg-gradient-to-b from-[#fff6ec] to-[#fdf6f1] py-10 px-6 shadow-lg rounded-xl">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-3xl font-bold mb-8 text-[#4b2e2b] text-center">
           Feedback & FAQ Management
@@ -116,30 +117,56 @@ const FeedbackFAQAdmin = () => {
             ))}
           </div>
 
-          {/* Add FAQ Form */}
-          <div className="bg-white rounded-lg shadow-md p-4">
-            <h4 className="font-semibold text-[#2c5777] mb-3">Tambah FAQ Baru</h4>
-            <input
-              type="text"
-              placeholder="Pertanyaan"
-              value={newFAQ.question}
-              onChange={(e) => setNewFAQ({ ...newFAQ, question: e.target.value })}
-              className="w-full border border-gray-300 rounded p-2 mb-3"
-            />
-            <textarea
-              placeholder="Jawaban"
-              rows={3}
-              value={newFAQ.answer}
-              onChange={(e) => setNewFAQ({ ...newFAQ, answer: e.target.value })}
-              className="w-full border border-gray-300 rounded p-2 mb-3"
-            />
+          {/* Tombol untuk menampilkan form */}
+          {!showFAQForm && (
             <button
-              onClick={handleAddFAQ}
+              onClick={() => setShowFAQForm(true)}
               className="bg-[#36687c] hover:bg-[#2a4f65] text-white px-4 py-2 rounded"
             >
-              Tambah FAQ
+              Buat FAQ Baru
             </button>
-          </div>
+          )}
+
+          {/* Add FAQ Form */}
+          {showFAQForm && (
+            <div className="bg-white rounded-lg shadow-md p-4 mt-4">
+              <h4 className="font-semibold text-[#2c5777] mb-3">Tambah FAQ Baru</h4>
+              <input
+                type="text"
+                placeholder="Pertanyaan"
+                value={newFAQ.question}
+                onChange={(e) => setNewFAQ({ ...newFAQ, question: e.target.value })}
+                className="w-full border border-gray-300 rounded p-2 mb-3"
+              />
+              <textarea
+                placeholder="Jawaban"
+                rows={3}
+                value={newFAQ.answer}
+                onChange={(e) => setNewFAQ({ ...newFAQ, answer: e.target.value })}
+                className="w-full border border-gray-300 rounded p-2 mb-3"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => {
+                    setNewFAQ({ question: '', answer: '' });
+                    setShowFAQForm(false);
+                  }}
+                  className="px-4 py-2 border border-gray-400 rounded hover:bg-gray-100"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => {
+                    handleAddFAQ();
+                    setShowFAQForm(false);
+                  }}
+                  className="bg-[#36687c] hover:bg-[#2a4f65] text-white px-4 py-2 rounded"
+                >
+                  Tambah FAQ
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

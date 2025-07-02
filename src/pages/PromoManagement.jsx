@@ -9,6 +9,7 @@ const PromoManagement = () => {
     const [promos, setPromos] = useState(initialPromos);
     const [title, setTitle] = useState('');
     const [validUntil, setValidUntil] = useState('');
+    const [showForm, setShowForm] = useState(false); // ✅ Tambah state
 
     const handleAddPromo = (e) => {
         e.preventDefault();
@@ -20,6 +21,7 @@ const PromoManagement = () => {
         setPromos([...promos, newPromo]);
         setTitle('');
         setValidUntil('');
+        setShowForm(false); // ✅ Sembunyikan form setelah submit
     };
 
     const handleSendPromo = (promo) => {
@@ -28,37 +30,53 @@ const PromoManagement = () => {
 
     return (
         <div className="bg-[#fdf6f1] p-6 rounded-xl shadow-md">
-            <h2 className="text-2xl font-semibold text-[#4b2e2b] mb-4">Promo Management</h2>
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-semibold text-[#4b2e2b]">Promo Management</h2>
+                <button
+                    onClick={() => setShowForm(!showForm)}
+                    className="bg-[#d3a170] text-white px-4 py-2 rounded hover:bg-[#a35f2a]"
+                >
+                    {showForm ? 'Tutup Form' : 'Buat Promo'}
+                </button>
+            </div>
 
             {/* FORM TAMBAH PROMO */}
-            <form onSubmit={handleAddPromo} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-white p-4 rounded shadow">
-                <div>
-                    <label className="text-sm text-[#4b2e2b]">Judul Promo</label>
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="w-full border border-[#d3a170] rounded px-3 py-2"
-                        required
-                        placeholder="Contoh: Diskon 10% Member Gold"
-                    />
-                </div>
-                <div>
-                    <label className="text-sm text-[#4b2e2b]">Berlaku Sampai</label>
-                    <input
-                        type="date"
-                        value={validUntil}
-                        onChange={(e) => setValidUntil(e.target.value)}
-                        className="w-full border border-[#d3a170] rounded px-3 py-2"
-                        required
-                    />
-                </div>
-                <div className="md:col-span-2">
-                    <button type="submit" className="bg-[#d3a170] text-white px-4 py-2 rounded hover:bg-[#a35f2a] w-full">
-                        Tambah Promo
-                    </button>
-                </div>
-            </form>
+            {showForm && (
+                <form
+                    onSubmit={handleAddPromo}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-white p-4 rounded shadow"
+                >
+                    <div>
+                        <label className="text-sm text-[#4b2e2b]">Judul Promo</label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="w-full border border-[#d3a170] rounded px-3 py-2"
+                            required
+                            placeholder="Contoh: Diskon 10% Member Gold"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm text-[#4b2e2b]">Berlaku Sampai</label>
+                        <input
+                            type="date"
+                            value={validUntil}
+                            onChange={(e) => setValidUntil(e.target.value)}
+                            className="w-full border border-[#d3a170] rounded px-3 py-2"
+                            required
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <button
+                            type="submit"
+                            className="bg-[#d3a170] text-white px-4 py-2 rounded hover:bg-[#a35f2a] w-full"
+                        >
+                            Tambah Promo
+                        </button>
+                    </div>
+                </form>
+            )}
 
             {/* TABEL PROMO */}
             <h3 className="text-lg font-semibold text-[#4b2e2b] mb-2">Daftar Promo Aktif</h3>

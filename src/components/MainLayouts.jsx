@@ -4,9 +4,12 @@ import Header from "./Header";
 
 export default function MainLayout() {
   return (
-    <div id="app-container" className="bg-gray-100 min-h-screen flex w-full">
-      <Sidebar /> {/* pastikan Sidebar punya fixed width, contoh: w-64 */}
-      <div id="main-content" className="flex-1 flex flex-col">
+    <div className="min-h-screen bg-gray-100">
+      {/* Sidebar fixed */}
+      <Sidebar />
+
+      {/* Konten utama geser ke kanan karena sidebar fixed 64px */}
+      <div className="ml-64 flex flex-col min-h-screen">
         <Header />
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">

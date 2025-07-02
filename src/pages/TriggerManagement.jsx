@@ -26,29 +26,31 @@ const sendEmail = (to, subject, message) => {
   alert(`Email otomatis ke ${to} berhasil dikirim!`);
 };
 
-// === Fungsi Trigger Otomatis Berdasarkan Ulang Tahun ===
-const checkBirthdayTriggers = () => {
-  const today = new Date().toISOString().slice(5, 10); // "MM-DD"
-  const triggered = dummyCustomers.filter(c => c.birthday?.slice(5, 10) === today);
+const getTodayMMDD = () => new Date().toISOString().slice(5, 10);
 
-  triggered.forEach(customer => {
-    const subject = "🎉 Selamat Ulang Tahun!";
-    const message = `Hai ${customer.name}, nikmati diskon 20% hari ini khusus ulang tahunmu! 🎁`;
-    sendEmail(customer.email, subject, message);
-  });
-
-  return triggered.length;
+const getTargetCustomers = (triggerEvent) => {
+  const today = getTodayMMDD();
+  switch (triggerEvent) {
+    case 'birthday':
+      return dummyCustomers.filter((c) => c.birthday?.slice(5, 10) === today);
+    case 'purchase-history':
+      return dummyCustomers.filter((c) => new Date(c.lastPurchase) > new Date('2024-05-01'));
+    case 'inactivity':
+      return dummyCustomers.filter((c) => new Date(c.lastPurchase) < new Date('2024-06-01'));
+    default:
+      return [];
+  }
 };
 
 // === UI Komponen ===
 const TriggerManagement = () => {
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [triggerEvent, setTriggerEvent] = useState('');
+  const [triggerEvent, setTriggerEvent] = useState('birthday');
   const [subject, setSubject] = useState('Selamat Ulang Tahun!');
   const [message, setMessage] = useState(
     'Hai pelanggan setia! Nikmati diskon 20% untuk pembelian hari ini. 🎉'
   );
   const [preview, setPreview] = useState(false);
+  const [targetCustomers, setTargetCustomers] = useState([]);
 
   const templateRekomendasi = [
     'Donat Coklat Leleh',
@@ -56,39 +58,36 @@ const TriggerManagement = () => {
     'Yogurt Stroberi Segar',
   ];
 
-  const handlePreview = () => setPreview(true);
-  const handleSend = () => alert('Email dikirim! (simulasi)');
+  const handlePreview = () => {
+    const targets = getTargetCustomers(triggerEvent);
+    setTargetCustomers(targets);
+    setPreview(true);
+  };
+
+  const handleSend = () => {
+    const targets = getTargetCustomers(triggerEvent);
+    targets.forEach((customer) => {
+      sendEmail(customer.email, subject, message);
+    });
+    setTargetCustomers(targets);
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-[#fdf6f1] rounded-xl shadow">
       <h2 className="text-2xl font-bold text-[#4b2e2b] mb-4">Trigger Marketing</h2>
 
-      {/* Form Input */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div>
-          <label className="text-sm text-[#4b2e2b]">Email Pelanggan</label>
-          <input
-            type="email"
-            value={customerEmail}
-            onChange={(e) => setCustomerEmail(e.target.value)}
-            className="w-full border border-[#d3a170] rounded px-3 py-2"
-            placeholder="contoh@email.com"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm text-[#4b2e2b]">Trigger Event</label>
-          <select
-            value={triggerEvent}
-            onChange={(e) => setTriggerEvent(e.target.value)}
-            className="w-full border border-[#d3a170] rounded px-3 py-2"
-          >
-            <option value="">Pilih Event</option>
-            <option value="birthday">Ulang Tahun</option>
-            <option value="purchase-history">Histori Pembelian</option>
-            <option value="inactivity">Tidak Aktif 30 Hari</option>
-          </select>
-        </div>
+      {/* Trigger Event */}
+      <div className="mb-6">
+        <label className="text-sm text-[#4b2e2b]">Trigger Event</label>
+        <select
+          value={triggerEvent}
+          onChange={(e) => setTriggerEvent(e.target.value)}
+          className="w-full border border-[#d3a170] rounded px-3 py-2"
+        >
+          <option value="birthday">Ulang Tahun</option>
+          <option value="purchase-history">Histori Pembelian</option>
+          <option value="inactivity">Tidak Aktif 30 Hari</option>
+        </select>
       </div>
 
       {/* Subject & Message */}
@@ -134,17 +133,7 @@ const TriggerManagement = () => {
           onClick={handleSend}
           className="bg-[#d3a170] text-white px-4 py-2 rounded hover:bg-[#a35f2a]"
         >
-          Kirim Manual
-        </button>
-
-        <button
-          onClick={() => {
-            const total = checkBirthdayTriggers();
-            alert(`Sistem otomatis mengirim ${total} email ulang tahun.`);
-          }}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          Jalankan Trigger Otomatis
+          Kirim Sekarang
         </button>
       </div>
 
@@ -159,6 +148,12 @@ const TriggerManagement = () => {
             <ul className="list-disc pl-5 text-sm">
               {templateRekomendasi.map((item, i) => (
                 <li key={i}>{item}</li>
+              ))}
+            </ul>
+            <p className="mt-4 text-sm text-[#888]">Target: {targetCustomers.length} pelanggan</p>
+            <ul className="list-disc pl-5 text-sm">
+              {targetCustomers.map((c, i) => (
+                <li key={i}>{c.name} ({c.email})</li>
               ))}
             </ul>
           </div>

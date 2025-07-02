@@ -1,207 +1,139 @@
-import React, { useState, useEffect } from 'react';
-
-const products = [
-  { name: 'Donat Coklat', price: 12000 },
-  { name: 'Kopi Latte', price: 25000 },
-  { name: 'Yogurt Stroberi', price: 20000 },
-];
-
-const promos = [
-  { id: 1, title: 'Diskon 10% untuk Member Gold', validUntil: '30 Juni 2025' },
-  { id: 2, title: 'Beli 2 Gratis 1 Donat', validUntil: '15 Juli 2025' },
-];
-
-const members = [
-  { email: 'john@example.com', phone: '081234567890', name: 'John Doe', membership: 'Gold' },
-  { email: 'jane@example.com', phone: '082345678901', name: 'Jane Smith', membership: 'Silver' },
-];
+import React, { useState } from 'react';
+import { dummyOrders } from '../data/dummyOrders';
 
 const OrderManagement = () => {
-  const [contactInfo, setContactInfo] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [purchaseMethod, setPurchaseMethod] = useState('');
-  const [cartItems, setCartItems] = useState([]);
+  const [orders, setOrders] = useState(dummyOrders);
 
-  const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const countByStatus = (status) =>
+    orders.filter((order) => order.status === status).length;
 
-  useEffect(() => {
-    const member = members.find(
-      (m) => m.email === contactInfo || m.phone === contactInfo
-    );
-    if (member) {
-      setCustomerName(member.name);
-    }
-  }, [contactInfo]);
+  const countByChannel = (channel) =>
+    orders.filter((order) => order.channel === channel).length;
 
-  const handleAddToCart = () => {
-    if (!selectedProduct) return;
-    const prod = products.find(p => p.name === selectedProduct);
-    const newItem = {
-      name: selectedProduct,
-      price: prod.price,
-      quantity,
-      subtotal: prod.price * quantity,
-    };
-    setCartItems([...cartItems, newItem]);
-    setSelectedProduct('');
-    setQuantity(1);
+  const totalByStatus = {
+    Menunggu: countByStatus('Menunggu'),
+    Diproses: countByStatus('Diproses'),
+    Selesai: countByStatus('Selesai'),
+    Dibatalkan: countByStatus('Dibatalkan'),
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert('Transaksi berhasil disimpan!');
+  const totalByChannel = {
+    'Dine-in': countByChannel('Dine-in'),
+    Takeaway: countByChannel('Takeaway'),
+  };
+
+  const handleStatusChange = (orderId, newStatus) => {
+    const updatedOrders = orders.map((order) =>
+      order.id === orderId ? { ...order, status: newStatus } : order
+    );
+    setOrders(updatedOrders);
   };
 
   return (
-    <div className="bg-[#fdf6f1] p-6 rounded-xl shadow-md">
-      <h2 className="text-2xl font-semibold text-[#4b2e2b] mb-4">Form Transaksi POS</h2>
+    <div className="min-h-screen bg-gradient-to-b from-[#fff6ec] to-[#fdf6f1] p-6">
+      <h2 className="text-3xl font-bold mb-6 text-center text-[#4b2e2b]">Order Management</h2>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div>
-          <label className="text-sm text-[#4b2e2b]">Email / Nomor HP</label>
-          <input
-            type="text"
-            value={contactInfo}
-            onChange={(e) => setContactInfo(e.target.value)}
-            className="w-full border border-[#d3a170] rounded px-3 py-2"
-            placeholder="Masukkan email atau nomor"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="text-sm text-[#4b2e2b]">Nama Pelanggan</label>
-          <input
-            type="text"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            className="w-full border border-[#d3a170] rounded px-3 py-2"
-            placeholder="Nama akan terisi otomatis jika member"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="text-sm text-[#4b2e2b]">Produk</label>
-          <select
-            value={selectedProduct}
-            onChange={(e) => setSelectedProduct(e.target.value)}
-            className="w-full border border-[#d3a170] rounded px-3 py-2"
+      {/* Cards Ringkasan */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {Object.entries(totalByStatus).map(([status, total]) => (
+          <div
+            key={status}
+            className={`rounded-xl p-4 text-white shadow-md ${{
+                Menunggu: 'bg-yellow-500',
+                Diproses: 'bg-blue-500',
+                Selesai: 'bg-green-600',
+                Dibatalkan: 'bg-red-500',
+              }[status]
+              }`}
           >
-            <option value="">Pilih Produk</option>
-            {products.map((prod) => (
-              <option key={prod.name} value={prod.name}>{prod.name}</option>
-            ))}
-          </select>
-          <input
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            className="w-full border border-[#d3a170] rounded px-3 py-2 mt-2"
-            placeholder="Jumlah"
-          />
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            className="bg-[#4b2e2b] text-white px-4 py-2 rounded hover:bg-[#a35f2a] mt-2 w-full"
-          >
-            Tambah ke Keranjang
-          </button>
-        </div>
-
-        <div>
-          <label className="text-sm text-[#4b2e2b]">Metode Pembayaran</label>
-          <select
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-            className="w-full border border-[#d3a170] rounded px-3 py-2"
-            required
-          >
-            <option value="">Pilih Metode</option>
-            <option value="QRIS">QRIS</option>
-            <option value="Tunai">Tunai</option>
-            <option value="Kartu">Kartu</option>
-          </select>
-
-          <label className="text-sm text-[#4b2e2b] mt-4 block">Metode Pembelian</label>
-          <select
-            value={purchaseMethod}
-            onChange={(e) => setPurchaseMethod(e.target.value)}
-            className="w-full border border-[#d3a170] rounded px-3 py-2"
-            required
-          >
-            <option value="">Pilih Kanal</option>
-            <option value="Dine-in">Dine-in</option>
-            <option value="Takeaway">Takeaway</option>
-            <option value="Delivery">Delivery</option>
-          </select>
-        </div>
-
-        <div className="md:col-span-2 mt-4">
-          <h4 className="font-semibold text-[#4b2e2b] mb-2">Keranjang Produk</h4>
-          <table className="w-full text-sm bg-white border">
-            <thead className="bg-[#f3e5dc] text-[#4b2e2b]">
-              <tr>
-                <th className="p-2 text-left">Produk</th>
-                <th className="p-2">Qty</th>
-                <th className="p-2">Harga</th>
-                <th className="p-2">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody className="text-[#4b2e2b]">
-              {cartItems.map((item, index) => (
-                <tr key={index}>
-                  <td className="p-2">{item.name}</td>
-                  <td className="p-2 text-center">{item.quantity}</td>
-                  <td className="p-2">Rp {item.price.toLocaleString()}</td>
-                  <td className="p-2">Rp {item.subtotal.toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="text-right mt-2 font-bold text-[#4b2e2b]">
-            Total: Rp {total.toLocaleString()}
+            <h4 className="text-sm uppercase font-semibold">{status}</h4>
+            <p className="text-2xl font-bold">{total}</p>
           </div>
+        ))}
+      </div>
 
-          <button
-            type="submit"
-            className="mt-4 bg-[#d3a170] text-white px-4 py-2 rounded hover:bg-[#a35f2a] w-full"
+      {/* Cards Channel */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        {Object.entries(totalByChannel).map(([channel, total]) => (
+          <div
+            key={channel}
+            className="rounded-xl bg-[#d3a170] p-4 text-white shadow-md"
           >
-            Simpan Transaksi
-          </button>
-        </div>
-      </form>
+            <h4 className="text-sm uppercase font-semibold">{channel}</h4>
+            <p className="text-2xl font-bold">{total}</p>
+          </div>
+        ))}
+      </div>
 
-      <hr className="my-6" />
-
-      <h3 className="text-lg font-semibold text-[#4b2e2b] mb-2">Reminder Promo Aktif</h3>
-      <table className="min-w-full text-sm bg-white shadow rounded overflow-hidden">
-        <thead className="bg-[#f3e5dc] text-[#4b2e2b]">
-          <tr>
-            <th className="p-2 text-left">Judul Promo</th>
-            <th className="p-2 text-left">Berlaku Sampai</th>
-            <th className="p-2 text-center">Aksi</th>
-          </tr>
-        </thead>
-        <tbody className="text-[#4b2e2b]">
-          {promos.map((promo) => (
-            <tr key={promo.id} className="border-t hover:bg-[#fff8f4]">
-              <td className="p-2">{promo.title}</td>
-              <td className="p-2">{promo.validUntil}</td>
-              <td className="p-2 text-center">
-                <button className="bg-[#4b2e2b] text-white px-3 py-1 rounded hover:bg-[#a35f2a]">
-                  Kirim Sekarang
-                </button>
-              </td>
+      {/* Tabel Order */}
+      <div className="overflow-x-auto bg-white rounded-xl shadow-md">
+        <table className="min-w-full text-sm">
+          <thead className="bg-[#f4e8dc] text-[#4b2e2b] text-left">
+            <tr>
+              <th className="p-3">ID</th>
+              <th className="p-3">Pelanggan</th>
+              <th className="p-3">Kontak</th>
+              <th className="p-3">Produk</th>
+              <th className="p-3">Total</th>
+              <th className="p-3">Pembayaran</th>
+              <th className="p-3">Kanal</th>
+              <th className="p-3">Status</th>
+              <th className="p-3 text-center">Aksi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="text-[#4b2e2b]">
+            {orders.map((order) => {
+              const total = order.items.reduce(
+                (sum, item) => sum + item.qty * item.price,
+                0
+              );
+
+              return (
+                <tr key={order.id} className="border-t hover:bg-[#fffaf5]">
+                  <td className="p-3 font-semibold">{order.id}</td>
+                  <td className="p-3">
+                    {order.customer}
+                    <div className="text-xs text-[#a35f2a]">{order.membership} Member</div>
+                  </td>
+                  <td className="p-3">{order.contact}</td>
+                  <td className="p-3">
+                    <ul className="list-disc list-inside space-y-1">
+                      {order.items.map((item, i) => (
+                        <li key={i}>
+                          {item.name} × {item.qty}
+                        </li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td className="p-3 font-semibold">Rp {total.toLocaleString()}</td>
+                  <td className="p-3">{order.payment}</td>
+                  <td className="p-3">{order.channel}</td>
+                  <td className="p-3">
+                    <select
+                      value={order.status}
+                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      className="text-xs px-2 py-1 rounded bg-white border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#a35f2a]"
+                    >
+                      <option value="Menunggu">Menunggu</option>
+                      <option value="Diproses">Diproses</option>
+                      <option value="Selesai">Selesai</option>
+                      <option value="Dibatalkan">Dibatalkan</option>
+                    </select>
+                  </td>
+                  <td className="p-3 text-center">
+                    <button
+                      className="text-[#a35f2a] underline text-xs"
+                      onClick={() => alert('Cetak struk coming soon')}
+                    >
+                      Cetak Struk
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
