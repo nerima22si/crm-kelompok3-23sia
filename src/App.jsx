@@ -23,6 +23,9 @@ import Register from "./pages/Register";
 import Forgot from "./pages/Forgot";
 import Error from "./pages/Error";
 import Unauthorized from "./pages/Unauthorized";
+import MarketingAutomation from "./pages/MarketingAutomation";
+import TambahKontakForm from "./pages/TambahKontakForm";
+import AccountSettings from "./pages/AccountSettings";
 
 function App() {
   return (
@@ -43,6 +46,16 @@ function App() {
         <Route path="/feedback-faq" element={<FeedbackFAQManagement />} />
         <Route path="/loyalty" element={<LoyaltyManagement />} />
         <Route path="/loyalty/:id" element={<DetailLoyalty />} />
+        <Route path="/marketing" element={<MarketingAutomation />} />
+        <Route path="/marketingform" element={<TambahKontakForm />} />
+        <Route path="/settings" element={<AccountSettings/>} />
+
+
+
+
+
+
+
 
         {/* Product Management */}
         <Route path="/products" element={<ProductManagement />} />

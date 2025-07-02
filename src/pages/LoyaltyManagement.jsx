@@ -5,14 +5,14 @@ import rawCustomers from "../data/customers2";
 const membershipColor = {
   Gold: "bg-yellow-400",
   Silver: "bg-gray-400",
-  Bronze: "bg-orange-400",
+  Reguler: "bg-orange-400",
   Platinum: "bg-blue-400",
 };
 
 // Segmentasi loyalti berdasarkan data transaksi
 const segmentCustomers = (customers) => {
   return customers.map((cust) => {
-    let membership = "Bronze"; // Default
+    let membership = "Reguler"; // Default
 
     if (cust.activeInPromo && cust.annualSpending >= 10000000) {
       membership = "Platinum";
@@ -104,7 +104,7 @@ const LoyaltyManagement = () => {
               <option value="Platinum">Platinum</option>
               <option value="Gold">Gold</option>
               <option value="Silver">Silver</option>
-              <option value="Bronze">Bronze</option>
+              <option value="Reguler">Reguler</option>
             </select>
           </div>
 

@@ -26,16 +26,20 @@ const Sidebar = () => {
   const isActive = (path) => location.pathname === path;
 
   const menuItems = [
-    { name: "Dashboard", path: "/", icon: <LayoutDashboard /> },
+    { name: "Dashboard", path: "/dashboard/admin", icon: <LayoutDashboard /> },
     { name: "Account Management", path: "/account-management", icon: <Users /> },
     { name: "Sales Insight", path: "/sales-insight", icon: <Megaphone /> },
     { name: "Order Management", path: "/order-management", icon: <ClipboardList /> },
     { name: "Promo", path: "/promo-management", icon: <ClipboardList /> },
     { name: "Campaign", path: "/campaign", icon: <Megaphone /> },
-    { name: "Trigger", path: "/trigger-marketing", icon: <Zap /> },
+    { name: "Marketing", path: "/marketing", icon: <Box /> },
+    //{ name: "Trigger", path: "/trigger-marketing", icon: <Zap /> },
     { name: "Feedback & FAQ", path: "/feedback-faq", icon: <MessageSquare /> },
     { name: "Loyalty", path: "/loyalty", icon: <Star /> },
     { name: "Products", path: "/products", icon: <Box /> },
+    
+
+
   ];
 
   const handleLogout = () => {
@@ -102,7 +106,7 @@ const Sidebar = () => {
         <div className="mt-8 text-xs font-semibold text-gray-500">AKUN</div>
         <nav className="mt-2 space-y-1">
           <Link
-            to="/akun"
+            to="/settings"
             className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-orange-100 transition ${isActive("/akun")
               ? "bg-orange-200 text-orange-800 font-semibold"
               : "text-gray-700"

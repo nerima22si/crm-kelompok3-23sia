@@ -10,6 +10,22 @@ const FeedbackFAQAdmin = () => {
       status: 'Belum Selesai',
       reply: '',
     },
+    {
+      id: 2,
+      customer: 'Andi Wijaya',
+      email: 'andi@email.com',
+      message: 'Produk tidak sesuai deskripsi.',
+      status: 'Selesai',
+      reply: 'Kami mohon maaf atas ketidaknyamanannya. Kami akan menindaklanjuti.',
+    },
+    {
+      id: 3,
+      customer: 'Sinta Dewi',
+      email: 'sinta@email.com',
+      message: 'Website sering error saat checkout.',
+      status: 'Belum Selesai',
+      reply: '',
+    },
   ]);
 
   const [faqs, setFaqs] = useState([
@@ -47,12 +63,33 @@ const FeedbackFAQAdmin = () => {
     setReplyModal({ open: false, feedbackId: null, replyText: '' });
   };
 
+  // STATISTICS
+  const total = feedbacks.length;
+  const selesai = feedbacks.filter((f) => f.status === "Selesai").length;
+  const belumSelesai = feedbacks.filter((f) => f.status === "Belum Selesai").length;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#fff6ec] to-[#fdf6f1] py-10 px-6 shadow-lg rounded-xl">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-3xl font-bold mb-8 text-[#4b2e2b] text-center">
           Feedback & FAQ Management
         </h2>
+
+        {/* Cards Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-xl shadow-md p-6 text-center">
+            <h4 className="text-lg font-semibold text-[#4b2e2b]">Total Komplain</h4>
+            <p className="text-3xl font-bold text-[#a35f2a]">{total}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-md p-6 text-center">
+            <h4 className="text-lg font-semibold text-green-700">Selesai</h4>
+            <p className="text-3xl font-bold text-green-600">{selesai}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-md p-6 text-center">
+            <h4 className="text-lg font-semibold text-yellow-700">Belum Selesai</h4>
+            <p className="text-3xl font-bold text-yellow-600">{belumSelesai}</p>
+          </div>
+        </div>
 
         {/* Feedback Table */}
         <div className="mb-12">
@@ -117,7 +154,6 @@ const FeedbackFAQAdmin = () => {
             ))}
           </div>
 
-          {/* Tombol untuk menampilkan form */}
           {!showFAQForm && (
             <button
               onClick={() => setShowFAQForm(true)}
@@ -127,7 +163,6 @@ const FeedbackFAQAdmin = () => {
             </button>
           )}
 
-          {/* Add FAQ Form */}
           {showFAQForm && (
             <div className="bg-white rounded-lg shadow-md p-4 mt-4">
               <h4 className="font-semibold text-[#2c5777] mb-3">Tambah FAQ Baru</h4>
