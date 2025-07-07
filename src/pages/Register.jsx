@@ -32,6 +32,8 @@ export default function Register() {
                 {
                     id: user.id,
                     full_name: fullName,
+                    email: email,
+                    role: "user", // ✅ Set default role
                 },
             ]);
 

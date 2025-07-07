@@ -72,7 +72,7 @@ function App() {
         <Route path="/belanja/id/:kategori" element={<BelanjaPerKategori />} />
         <Route path="/customer/belanja" element={<BelanjaPage />} />
         <Route path="/customer/checkout" element={<Checkout />} />
-        <Route path="/customert/riwayat-transaksi" element={<RiwayatTransaksi />} />
+        <Route path="/customer/riwayat-transaksi" element={<RiwayatTransaksi />} />
         <Route path="/customer/riwayat-transaksi/:id" element={<DetailTransaksi />} />
         <Route path="/customer/promo" element={<PromoCustomer />} />
         <Route path="/customer/complain" element={<Complain />} />

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ImSpinner2 } from "react-icons/im";
 import { BsFillExclamationDiamondFill } from "react-icons/bs";
 import jcoLogo from "../assets/jco.logo.png";
-
+import { supabase } from "./supabase";
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -12,41 +12,70 @@ export default function Login() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
+    const checkSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
 
-    // Cek hanya jika bukan di halaman login
-    if (user && location.pathname === "/login") {
-      const { role } = JSON.parse(user);
-      if (role === "admin") navigate("/dashboard/admin");
-      else if (role === "user") navigate("/dashboard/customer");
-    }
-  }, [navigate, location]);
+      if (user && location.pathname === "/login") {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+
+        if (profile?.role === "admin") navigate("/dashboard/admin");
+        else navigate("/customer");
+      }
+    };
+
+    checkSession();
+  }, [location, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setDataForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const email = dataForm.email.toLowerCase();
-    const password = dataForm.password;
+    const { email, password } = dataForm;
 
-    setTimeout(() => {
-      if (email === "jco@admin" && password === "admin123") {
-        localStorage.setItem("user", JSON.stringify({ email, role: "admin" }));
-        navigate("/dashboard/admin");
-      } else if (email === "rima@gmail.com" && password === "rima123") {
-        localStorage.setItem("user", JSON.stringify({ email, role: "user" }));
-        navigate("/customer");
-      } else {
-        setError("Email atau password salah.");
-      }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError("Email atau password salah.");
       setLoading(false);
-    }, 1000);
+      return;
+    }
+
+    const user = data?.user;
+
+    // Get profile from Supabase table
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role, full_name, email")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || !profile) {
+      setError("Gagal mengambil data profil.");
+      setLoading(false);
+      return;
+    }
+
+    // Save to localStorage (optional)
+    localStorage.setItem("user", JSON.stringify({ ...profile }));
+
+    // Redirect based on role
+    if (profile.role === "admin") navigate("/dashboard/admin");
+    else navigate("/customer");
+
+    setLoading(false);
   };
 
   return (
@@ -78,7 +107,7 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            type="text"
+            type="email"
             name="email"
             value={dataForm.email}
             onChange={handleChange}
@@ -100,6 +129,7 @@ export default function Login() {
           <button
             type="submit"
             className="w-full bg-[#d2691e] hover:bg-[#a24f16] text-white font-semibold py-2 rounded-lg transition-all"
+            disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}
           </button>

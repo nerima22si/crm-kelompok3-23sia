@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
-import products from "../../data/Products";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "../../CartContext";
+import { supabase } from "../supabase"; // pastikan path sesuai
 
 const kategoriList = [
     "Donat",
@@ -16,18 +16,36 @@ const kategoriList = [
 const BelanjaPerKategori = () => {
     const { kategori } = useParams();
     const navigate = useNavigate();
-    const { cart, addToCart } = useCart(); // ambil dari context
+    const { cart, addToCart } = useCart();
+    const [produkTampil, setProdukTampil] = useState([]);
     const [showCart, setShowCart] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const kategoriTitle =
         kategori.charAt(0).toUpperCase() + kategori.slice(1).replace(".", " ");
-    const produkTampil = products.filter(
-        (item) => item.category.toLowerCase() === kategori.toLowerCase()
-    );
+
+    useEffect(() => {
+        const fetchProduk = async () => {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from("products")
+                .select("*")
+                .ilike("category", kategori); // cocokkan kategori (case-insensitive)
+
+            if (error) {
+                console.error("Gagal ambil data:", error.message);
+                setProdukTampil([]);
+            } else {
+                setProdukTampil(data);
+            }
+            setLoading(false);
+        };
+
+        fetchProduk();
+    }, [kategori]);
 
     const handleAddToCart = (product) => {
-        addToCart(product); // panggil fungsi context
-        
+        addToCart(product);
     };
 
     const handleCheckout = () => {
@@ -43,8 +61,8 @@ const BelanjaPerKategori = () => {
                         key={cat}
                         onClick={() => navigate(`/belanja/id/${cat.toLowerCase()}`)}
                         className={`px-4 py-2 rounded-full text-sm font-medium border transition ${cat.toLowerCase() === kategori.toLowerCase()
-                            ? "bg-[#f8eadd] text-[#c27c28] border-[#c27c28]"
-                            : "bg-white text-gray-600 border-gray-300 hover:border-[#c27c28] hover:text-[#c27c28]"
+                                ? "bg-[#f8eadd] text-[#c27c28] border-[#c27c28]"
+                                : "bg-white text-gray-600 border-gray-300 hover:border-[#c27c28] hover:text-[#c27c28]"
                             }`}
                     >
                         {cat}
@@ -58,7 +76,9 @@ const BelanjaPerKategori = () => {
             </h1>
 
             {/* Produk */}
-            {produkTampil.length === 0 ? (
+            {loading ? (
+                <p className="text-gray-400 text-center">🔄 Memuat produk...</p>
+            ) : produkTampil.length === 0 ? (
                 <p className="text-gray-500 text-center">
                     Belum ada produk di kategori ini.
                 </p>
@@ -74,9 +94,7 @@ const BelanjaPerKategori = () => {
                                 alt={item.name}
                                 className="w-full h-40 object-cover"
                             />
-                            <h3 className="text-lg font-semibold text-gray-800">
-                                {item.name}
-                            </h3>
+                            <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
                             <p className="text-sm text-gray-500">{item.category}</p>
                             <p className="text-[#c27c28] font-bold mt-2">
                                 Rp {item.price.toLocaleString("id-ID")}

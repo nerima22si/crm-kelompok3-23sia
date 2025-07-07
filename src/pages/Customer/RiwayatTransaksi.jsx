@@ -1,4 +1,3 @@
-// src/pages/RiwayatTransaksi.jsx
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import { useNavigate } from "react-router-dom";
@@ -9,18 +8,25 @@ const RiwayatTransaksi = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchOrders = async () => {
-            const { data, error } = await supabase
-                .from("orders")
-                .select("*")
-                .order("id", { ascending: false });
-
-            if (!error) setOrders(data);
+        const stored = localStorage.getItem("user");
+        if (stored) {
+            const userData = JSON.parse(stored);
+            fetchOrders(userData.email);
+        } else {
             setLoading(false);
-        };
-
-        fetchOrders();
+        }
     }, []);
+
+    const fetchOrders = async (email) => {
+        const { data, error } = await supabase
+            .from("orders")
+            .select("*")
+            .eq("customer_email", email)
+            .order("id", { ascending: false });
+
+        if (!error) setOrders(data);
+        setLoading(false);
+    };
 
     return (
         <div className="max-w-5xl mx-auto p-6">
@@ -35,8 +41,8 @@ const RiwayatTransaksi = () => {
                     {orders.map((order) => (
                         <div
                             key={order.id}
-                            onClick={() => navigate(`/riwayat-transaksi/${order.id}`)}
-                            className="cursor-pointer bg-white rounded-lg shadow border p-4 hover:shadow-lg transition"
+                            onClick={() => navigate(`/customer/riwayat-transaksi/${order.id}`)}
+                            className="cursor-pointer bg-white rounded-xl border shadow p-4 hover:shadow-lg transition"
                         >
                             <div className="flex justify-between items-center mb-2">
                                 <h3 className="font-semibold text-[#a35f2a]">Order #{order.id}</h3>

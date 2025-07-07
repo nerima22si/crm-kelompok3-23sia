@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
     Bell,
@@ -7,6 +7,7 @@ import {
     X,
     CheckCircle,
 } from "lucide-react";
+import { supabase } from "../pages/supabase";
 
 const menuMap = [
     { path: "/pelanggan", label: "Dashboard" },
@@ -20,22 +21,44 @@ const menuMap = [
 const HeaderCustomer = () => {
     const [showNotif, setShowNotif] = useState(false);
     const [showCart, setShowCart] = useState(false);
+    const [userName, setUserName] = useState("Pengguna");
     const location = useLocation();
 
-    // Dapatkan judul berdasarkan path aktif
     const currentTitle =
         menuMap.find((item) => location.pathname.startsWith(item.path))?.label ||
         "Halaman";
 
+    // 🔁 Ambil nama user dari Supabase saat komponen dimuat
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            const {
+                data: { user },
+                error: userError,
+            } = await supabase.auth.getUser();
+
+            if (user && !userError) {
+                const { data: profile, error: profileError } = await supabase
+                    .from("profiles")
+                    .select("full_name")
+                    .eq("id", user.id)
+                    .single();
+
+                if (profile && !profileError) {
+                    setUserName(profile.full_name);
+                }
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
+
     return (
         <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-30">
             <div className="flex justify-between items-center px-6 py-4">
-                {/* 🧭 Judul Halaman Aktif */}
                 <div className="text-lg font-semibold text-[#c27c28]">
                     {currentTitle}
                 </div>
 
-                {/* 🔔 🔽 👤 Aksi */}
                 <div className="flex items-center gap-5 relative">
                     <button
                         onClick={() => setShowNotif(!showNotif)}
@@ -57,14 +80,15 @@ const HeaderCustomer = () => {
                         </span>
                     </button>
 
+                    {/* Nama user dari Supabase */}
                     <div className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-[#c27c28] cursor-pointer">
                         <UserRound className="w-5 h-5" />
-                        <span className="hidden sm:inline">Nida M.</span>
+                        <span className="hidden sm:inline">{userName}</span>
                     </div>
                 </div>
             </div>
 
-            {/* Notifikasi Dropdown */}
+            {/* Notifikasi dan keranjang tetap sama */}
             {showNotif && (
                 <div className="absolute right-6 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-sm z-40">
                     <div className="p-4 text-sm">
@@ -89,7 +113,6 @@ const HeaderCustomer = () => {
                 </div>
             )}
 
-            {/* Keranjang Dropdown */}
             {showCart && (
                 <div className="absolute right-20 mt-2 w-80 bg-white border border-gray-100 rounded-xl shadow-sm z-40">
                     <div className="p-4 text-sm">

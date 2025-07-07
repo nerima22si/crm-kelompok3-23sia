@@ -16,7 +16,7 @@ const menuItems = [
     { name: "Dashboard", path: "/customer", icon: <LayoutDashboard /> },
     { name: "Promo", path: "/customer/promo", icon: <Gift /> },
     { name: "Belanja", path: "/customer/belanja", icon: <ShoppingBag /> },
-    { name: "Riwayat Transaksi", path: "/customert/riwayat-transaksi", icon: <History /> },
+    { name: "Riwayat Transaksi", path: "/customer/riwayat-transaksi", icon: <History /> },
     { name: "Komplain", path: "/customer/complain", icon: <MessageCircle /> },
     // { name: "Profil", path: "/customer/profil", icon: <User /> },
     // { name: "Customer Chat", path: "/customer/chat", icon: <User /> },
