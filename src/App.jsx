@@ -13,11 +13,11 @@ import CampaignManagement from "./pages/CampaignManagement";
 import ProductManagement from "./pages/ProductManagement";
 import BroadcastTriggerMarketing from "./pages/BroadcastTriggerMarketing";
 
-import KasirForm from "./pages/CashierForm";
+
 import KasirPage from "./pages/KasirPage";
 import AccountDetail from "./pages/AccountDetail";
 import DetailLoyalty from "./pages/DetailLoyalty";
-import AuthLayout from "./components/AuthLayout";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Forgot from "./pages/Forgot";
@@ -36,8 +36,9 @@ import RiwayatTransaksi from "./pages/Customer/RiwayatTransaksi";
 import DetailTransaksi from "./pages/Customer/DetailTransaksi";
 import PromoCustomer from "./pages/Customer/PromoCustomer";
 import Complain from "./pages/Customer/Complain";
-import AdminChat from "../AdminChat";
-import CustomerChat from "./pages/Customer/CustomerChat";
+
+
+
 
 function App() {
   return (
@@ -63,7 +64,7 @@ function App() {
         <Route path="/marketingform" element={<TambahKontakForm />} />
         <Route path="/settings" element={<AccountSettings />} />
         <Route path="/products" element={<ProductManagement />} />
-        <Route path="/adminchat" element={<AdminChat />} />
+    
       </Route>
       <Route element={<MainLayoutCustomer />}>
         <Route path="/customer" element={<PelangganDashboard />} />
@@ -75,7 +76,6 @@ function App() {
         <Route path="/customer/riwayat-transaksi/:id" element={<DetailTransaksi />} />
         <Route path="/customer/promo" element={<PromoCustomer />} />
         <Route path="/customer/complain" element={<Complain />} />
-        <Route path="/customer/chat" element={<CustomerChat />} />
       </Route>
       <Route path="/kasirpage" element={<KasirPage />} />
       <Route path="/kasir" element={<CashierForm />} />

@@ -1,4 +1,3 @@
-// src/pages/Checkout.jsx
 import { useCart } from "../../CartContext";
 import { useState } from "react";
 import { supabase } from "../supabase";
@@ -18,32 +17,50 @@ const Checkout = () => {
     const [cash, setCash] = useState(0);
     const [loading, setLoading] = useState(false);
 
-    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    const total = cart.reduce((sum, item) => sum + item.price * (item.qty || 1), 0);
     const change = cash - total;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (cart.length === 0) return alert("Keranjang kosong.");
-        if (cash < total) return alert("Uang tidak cukup.");
         if (!form.customer.trim()) return alert("Nama pelanggan harus diisi.");
 
-        const orderData = {
-            ...form,
-            items: cart,
-            total,
-        };
-
         setLoading(true);
-        const { error } = await supabase.from("orders").insert([orderData]);
-        setLoading(false);
+
+        // 1. Simpan order ke tabel orders
+        const { data: order, error } = await supabase
+            .from("orders")
+            .insert([{ ...form, total }])
+            .select()
+            .single();
 
         if (error) {
-            alert("Gagal menyimpan: " + error.message);
-        } else {
-            alert("✅ Order berhasil disimpan.");
-            clearCart();
-            navigate("/riwayat-transaksi");
+            setLoading(false);
+            return alert("Gagal menyimpan: " + error.message);
         }
+
+        // 2. Simpan item ke tabel order_items
+        const orderItems = cart.map((item) => ({
+            order_id: order.id,
+            product_name: item.name,
+            qty: item.qty || 1,
+            price: item.price,
+            product_image: item.image || null,
+        }));
+
+        const { error: itemError } = await supabase
+            .from("order_items")
+            .insert(orderItems);
+
+        setLoading(false);
+
+        if (itemError) {
+            return alert("Order berhasil, tapi gagal simpan detail produk: " + itemError.message);
+        }
+
+        alert("✅ Order berhasil disimpan.");
+        clearCart();
+        navigate("/customer/riwayat-transaksi");
     };
 
     return (
@@ -68,7 +85,7 @@ const Checkout = () => {
                     className="w-full border p-2 rounded"
                 />
 
-<select
+                <select
                     value={form.payment}
                     onChange={(e) => setForm({ ...form, payment: e.target.value })}
                     className="w-full border p-2 rounded"
@@ -79,7 +96,6 @@ const Checkout = () => {
                     <option value="Transfer">Transfer</option>
                 </select>
 
-                {/* ✅ Info rekening akan muncul jika pilih Transfer */}
                 {form.payment === "Transfer" && (
                     <div className="bg-yellow-50 border border-yellow-300 text-yellow-700 p-3 rounded text-sm">
                         Silakan transfer ke rekening berikut:<br />
@@ -96,12 +112,13 @@ const Checkout = () => {
                     <option value="Dine-in">Dine-in</option>
                 </select>
 
-                {/* Ringkasan Order */}
                 <div className="bg-gray-100 p-3 rounded">
                     <h4 className="font-medium mb-2">Ringkasan Pesanan:</h4>
                     <ul className="text-sm list-disc list-inside">
                         {cart.map((item, i) => (
-                            <li key={i}>{item.name} - Rp{item.price.toLocaleString()}</li>
+                            <li key={i}>
+                                {item.name} x {item.qty || 1} – Rp{(item.price * (item.qty || 1)).toLocaleString("id-ID")}
+                            </li>
                         ))}
                     </ul>
                     <p className="mt-2 font-bold">Total: Rp {total.toLocaleString("id-ID")}</p>
@@ -113,7 +130,6 @@ const Checkout = () => {
                     value={cash}
                     onChange={(e) => setCash(parseInt(e.target.value) || 0)}
                     className="w-full border p-2 rounded"
-                    required
                 />
 
                 <p className="font-semibold">
