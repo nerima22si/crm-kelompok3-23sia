@@ -1,31 +1,60 @@
-import React, { useState } from 'react';
-
-const initialPromos = [
-    { id: 1, title: 'Diskon 10% untuk Member Gold', validUntil: '2025-06-30' },
-    { id: 2, title: 'Beli 2 Gratis 1 Donat', validUntil: '2025-07-15' },
-];
+import React, { useEffect, useState } from 'react';
+import { supabase } from './supabase';
 
 const PromoManagement = () => {
-    const [promos, setPromos] = useState(initialPromos);
+    const [promos, setPromos] = useState([]);
     const [title, setTitle] = useState('');
     const [validUntil, setValidUntil] = useState('');
-    const [showForm, setShowForm] = useState(false); // ✅ Tambah state
+    const [showForm, setShowForm] = useState(false);
+    const [claims, setClaims] = useState([]);
+    const [selectedPromo, setSelectedPromo] = useState(null);
 
-    const handleAddPromo = (e) => {
+    const fetchPromos = async () => {
+        const { data, error } = await supabase
+            .from('promos')
+            .select('*')
+            .order('valid_until', { ascending: true });
+
+        if (!error) setPromos(data);
+    };
+
+    const fetchClaims = async (promoId) => {
+        const { data, error } = await supabase
+            .from('promo_claims')
+            .select('*')
+            .eq('promo_id', promoId)
+            .order('claimed_at', { ascending: false });
+
+        if (!error) {
+            setClaims(data);
+            setSelectedPromo(promoId);
+        }
+    };
+
+    useEffect(() => {
+        fetchPromos();
+    }, []);
+
+    const handleAddPromo = async (e) => {
         e.preventDefault();
-        const newPromo = {
-            id: promos.length + 1,
-            title,
-            validUntil,
-        };
-        setPromos([...promos, newPromo]);
-        setTitle('');
-        setValidUntil('');
-        setShowForm(false); // ✅ Sembunyikan form setelah submit
+
+        const { error } = await supabase.from('promos').insert([
+            { title, valid_until: validUntil }
+        ]);
+
+        if (!error) {
+            alert('✅ Promo berhasil ditambahkan!');
+            setTitle('');
+            setValidUntil('');
+            setShowForm(false);
+            fetchPromos();
+        } else {
+            alert('❌ Gagal: ' + error.message);
+        }
     };
 
     const handleSendPromo = (promo) => {
-        alert(`Promo "${promo.title}" telah dikirim ke pelanggan!`);
+        alert(`📢 Promo "${promo.title}" telah dikirim ke pelanggan!`);
     };
 
     return (
@@ -40,7 +69,6 @@ const PromoManagement = () => {
                 </button>
             </div>
 
-            {/* FORM TAMBAH PROMO */}
             {showForm && (
                 <form
                     onSubmit={handleAddPromo}
@@ -54,7 +82,7 @@ const PromoManagement = () => {
                             onChange={(e) => setTitle(e.target.value)}
                             className="w-full border border-[#d3a170] rounded px-3 py-2"
                             required
-                            placeholder="Contoh: Diskon 10% Member Gold"
+                            placeholder="Contoh: Diskon 10%"
                         />
                     </div>
                     <div>
@@ -78,7 +106,6 @@ const PromoManagement = () => {
                 </form>
             )}
 
-            {/* TABEL PROMO */}
             <h3 className="text-lg font-semibold text-[#4b2e2b] mb-2">Daftar Promo Aktif</h3>
             <table className="min-w-full text-sm bg-white shadow rounded overflow-hidden">
                 <thead className="bg-[#f3e5dc] text-[#4b2e2b]">
@@ -92,19 +119,45 @@ const PromoManagement = () => {
                     {promos.map((promo) => (
                         <tr key={promo.id} className="border-t hover:bg-[#fff8f4]">
                             <td className="p-2">{promo.title}</td>
-                            <td className="p-2">{promo.validUntil}</td>
-                            <td className="p-2 text-center">
+                            <td className="p-2">{promo.valid_until}</td>
+                            <td className="p-2 text-center space-x-2">
                                 <button
                                     onClick={() => handleSendPromo(promo)}
                                     className="bg-[#4b2e2b] text-white px-3 py-1 rounded hover:bg-[#a35f2a]"
                                 >
-                                    Kirim Sekarang
+                                    Kirim
+                                </button>
+                                <button
+                                    onClick={() => fetchClaims(promo.id)}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-800"
+                                >
+                                    Lihat Klaim
                                 </button>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+
+            {/* Jika ada klaim ditampilkan */}
+            {selectedPromo && (
+                <div className="mt-6 bg-white p-4 rounded shadow border">
+                    <h4 className="text-lg font-bold text-[#4b2e2b] mb-2">
+                        Klaim untuk Promo ID #{selectedPromo}
+                    </h4>
+                    {claims.length === 0 ? (
+                        <p className="text-gray-500 italic">Belum ada yang klaim.</p>
+                    ) : (
+                        <ul className="list-disc list-inside text-sm space-y-1 text-gray-700">
+                            {claims.map((c) => (
+                                <li key={c.id}>
+                                    {c.user_email} - <span className="text-xs text-gray-500">{new Date(c.claimed_at).toLocaleString()}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

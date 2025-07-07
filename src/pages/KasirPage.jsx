@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import KasirForm from './KasirForm';
+import KasirForm from './CashierForm';
 
 const KasirPage = () => {
     const [orders, setOrders] = useState([]);

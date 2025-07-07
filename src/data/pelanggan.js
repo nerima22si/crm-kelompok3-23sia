@@ -1,5 +1,4 @@
-
-const customers = [
+const pelanggan = [
   {'id': 1, 'name': 'Prabowo', 'email': 'prabowo@email.com', 'phone': '08790737796', 'monthlyOrders': 28, 'buysPremium': true, 'annualSpending': 7603848, 'activeInPromo': true, 'totalTransactions': 308},
   {'id': 2, 'name': 'Prayogo', 'email': 'prayogo@email.com', 'phone': '08567797269', 'monthlyOrders': 2, 'buysPremium': true, 'annualSpending': 245148, 'activeInPromo': false, 'totalTransactions': 28},
   {'id': 3, 'name': 'Hairyanto', 'email': 'hairyanto@email.com', 'phone': '08376269064', 'monthlyOrders': 15, 'buysPremium': true, 'annualSpending': 14204535, 'activeInPromo': false, 'totalTransactions': 90},
@@ -502,4 +501,4 @@ const customers = [
   {'id': 500, 'name': 'Pangestu', 'email': 'pangestu@email.com', 'phone': '08447577585', 'monthlyOrders': 9, 'buysPremium': true, 'annualSpending': 7482456, 'activeInPromo': false, 'totalTransactions': 81},
 ];
 
-export default customers;
+export default pelanggan;

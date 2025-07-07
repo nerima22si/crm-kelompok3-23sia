@@ -35,6 +35,7 @@ const Sidebar = () => {
     { name: "Marketing", path: "/marketing", icon: <Box /> },
     //{ name: "Trigger", path: "/trigger-marketing", icon: <Zap /> },
     { name: "Feedback & FAQ", path: "/feedback-faq", icon: <MessageSquare /> },
+
     { name: "Loyalty", path: "/loyalty", icon: <Star /> },
     { name: "Products", path: "/products", icon: <Box /> },
     

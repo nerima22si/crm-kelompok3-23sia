@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import customers from "../data/customers2";
-
 // Warna background untuk masing-masing level membership
 const membershipColor = {
     Gold: "bg-yellow-400",

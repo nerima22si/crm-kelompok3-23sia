@@ -1,28 +1,31 @@
 import React, { useState, useMemo } from "react";
 import rawCustomers from "../data/customers2";
 
-// Warna background untuk masing-masing level membership
 const membershipColor = {
-  Gold: "bg-yellow-400",
   Silver: "bg-gray-400",
-  Reguler: "bg-orange-400",
+  Gold: "bg-yellow-400",
   Platinum: "bg-blue-400",
 };
 
-// Segmentasi loyalti berdasarkan data transaksi
 const segmentCustomers = (customers) => {
   return customers.map((cust) => {
-    let membership = "Reguler"; // Default
+    const totalSpending = cust.annualSpending || 0;
+    const totalOrders = cust.totalTransactions || 0;
 
-    if (cust.activeInPromo && cust.annualSpending >= 10000000) {
+    let membership = "Silver";
+    if (totalSpending >= 1500000 || totalOrders >= 25) {
       membership = "Platinum";
-    } else if (cust.monthlyOrders >= 10 && cust.buysPremium) {
+    } else if (totalSpending >= 500000 || totalOrders >= 10) {
       membership = "Gold";
-    } else if (cust.monthlyOrders >= 5) {
-      membership = "Silver";
     }
 
-    return { ...cust, membership };
+    return {
+      ...cust,
+      totalSpending,
+      totalOrders,
+      membership,
+      point: Math.floor(totalSpending / 10000),
+    };
   });
 };
 
@@ -32,7 +35,6 @@ const LoyaltyManagement = () => {
 
   const customers = useMemo(() => segmentCustomers(rawCustomers), []);
 
-  // Hitung total member tiap membership
   const summaries = useMemo(() => {
     const summary = {};
     customers.forEach((cust) => {
@@ -48,7 +50,6 @@ const LoyaltyManagement = () => {
     }));
   }, [customers]);
 
-  // Filter berdasarkan keyword dan jenis membership
   const filteredCustomers = useMemo(() => {
     return customers.filter((cust) => {
       const keyword = searchTerm.toLowerCase();
@@ -104,7 +105,6 @@ const LoyaltyManagement = () => {
               <option value="Platinum">Platinum</option>
               <option value="Gold">Gold</option>
               <option value="Silver">Silver</option>
-              <option value="Reguler">Reguler</option>
             </select>
           </div>
 
@@ -119,14 +119,15 @@ const LoyaltyManagement = () => {
                   <th className="p-4">Email</th>
                   <th className="p-4">Nomor</th>
                   <th className="p-4">Transaksi</th>
+                  <th className="p-4">Total Spending</th>
+                  <th className="p-4">Poin</th>
                   <th className="p-4">Aksi</th>
                 </tr>
-
               </thead>
               <tbody>
                 {filteredCustomers.length === 0 ? (
                   <tr>
-                    <td className="p-4 text-center text-gray-500" colSpan={6}>
+                    <td className="p-4 text-center text-gray-500" colSpan={9}>
                       Tidak ada data ditemukan.
                     </td>
                   </tr>
@@ -134,22 +135,20 @@ const LoyaltyManagement = () => {
                   filteredCustomers.map((cust, index) => (
                     <tr
                       key={cust.id}
-                      className={`${index % 2 === 0 ? "bg-[#fffdfc]" : "bg-[#fff9f5]"
-                        } hover:bg-[#f8f2ee]`}
+                      className={`${index % 2 === 0 ? "bg-[#fffdfc]" : "bg-[#fff9f5]"} hover:bg-[#f8f2ee]`}
                     >
                       <td className="p-4">{String(index + 1).padStart(2, "0")}.</td>
                       <td className="p-4 font-medium text-[#4b2e2b]">{cust.name}</td>
                       <td className="p-4">
-                        <span
-                          className={`text-white text-xs px-2 py-1 rounded ${membershipColor[cust.membership] || "bg-gray-400"
-                            }`}
-                        >
+                        <span className={`text-white text-xs px-2 py-1 rounded ${membershipColor[cust.membership] || "bg-gray-400"}`}>
                           {cust.membership}
                         </span>
                       </td>
                       <td className="p-4">{cust.email}</td>
                       <td className="p-4">{cust.phone}</td>
-                      <td className="p-4">{cust.totalTransactions || 0}</td>
+                      <td className="p-4">{cust.totalOrders}</td>
+                      <td className="p-4">IDR {(cust.totalSpending || 0).toLocaleString()}</td>
+                      <td className="p-4">{cust.point || 0} pts</td>
                       <td className="p-4">
                         <button
                           onClick={() => window.location.href = `/loyalty/:id${cust.id}`}
@@ -158,7 +157,6 @@ const LoyaltyManagement = () => {
                           Detail
                         </button>
                       </td>
-
                     </tr>
                   ))
                 )}

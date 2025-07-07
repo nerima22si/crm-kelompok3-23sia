@@ -1,50 +1,72 @@
-import React, { useState } from 'react';
-import { dummyOrders } from '../data/dummyOrders';
+import React, { useEffect, useState } from 'react';
+
+import { supabase } from './supabase';
 
 const OrderManagement = () => {
-  const [orders, setOrders] = useState(dummyOrders);
+  const [orders, setOrders] = useState([]);
 
-  const countByStatus = (status) =>
-    orders.filter((order) => order.status === status).length;
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
-  const countByChannel = (channel) =>
-    orders.filter((order) => order.channel === channel).length;
+  const fetchOrders = async () => {
+    const { data, error } = await supabase.from('orders').select('*').order('id', { ascending: false });
+    if (error) {
+      console.error('Gagal fetch orders:', error);
+    } else {
+      setOrders(data);
+    }
+  };
+
+  const countBy = (key, value) =>
+    orders.filter((order) => order[key] === value).length;
 
   const totalByStatus = {
-    Menunggu: countByStatus('Menunggu'),
-    Diproses: countByStatus('Diproses'),
-    Selesai: countByStatus('Selesai'),
-    Dibatalkan: countByStatus('Dibatalkan'),
+    Menunggu: countBy('status', 'Menunggu'),
+    Diproses: countBy('status', 'Diproses'),
+    Selesai: countBy('status', 'Selesai'),
+    Dibatalkan: countBy('status', 'Dibatalkan'),
   };
 
   const totalByChannel = {
-    'Dine-in': countByChannel('Dine-in'),
-    Takeaway: countByChannel('Takeaway'),
+    'Dine-in': countBy('channel', 'Dine-in'),
+    Takeaway: countBy('channel', 'Takeaway'),
   };
 
-  const handleStatusChange = (orderId, newStatus) => {
-    const updatedOrders = orders.map((order) =>
-      order.id === orderId ? { ...order, status: newStatus } : order
-    );
-    setOrders(updatedOrders);
+  const handleStatusChange = async (orderId, newStatus) => {
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: newStatus })
+      .eq('id', orderId);
+
+    if (!error) {
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+    } else {
+      alert('❌ Gagal update status');
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#fff6ec] to-[#fdf6f1] p-6">
       <h2 className="text-3xl font-bold mb-6 text-center text-[#4b2e2b]">Order Management</h2>
 
-      {/* Cards Ringkasan */}
+      {/* Ringkasan Status */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {Object.entries(totalByStatus).map(([status, total]) => (
           <div
             key={status}
-            className={`rounded-xl p-4 text-white shadow-md ${{
+            className={`rounded-xl p-4 text-white shadow-md ${
+              {
                 Menunggu: 'bg-yellow-500',
                 Diproses: 'bg-blue-500',
                 Selesai: 'bg-green-600',
                 Dibatalkan: 'bg-red-500',
               }[status]
-              }`}
+            }`}
           >
             <h4 className="text-sm uppercase font-semibold">{status}</h4>
             <p className="text-2xl font-bold">{total}</p>
@@ -52,7 +74,7 @@ const OrderManagement = () => {
         ))}
       </div>
 
-      {/* Cards Channel */}
+      {/* Ringkasan Channel */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         {Object.entries(totalByChannel).map(([channel, total]) => (
           <div
@@ -83,10 +105,8 @@ const OrderManagement = () => {
           </thead>
           <tbody className="text-[#4b2e2b]">
             {orders.map((order) => {
-              const total = order.items.reduce(
-                (sum, item) => sum + item.qty * item.price,
-                0
-              );
+              const items = Array.isArray(order.items) ? order.items : [];
+              const total = items.reduce((sum, item) => sum + item.qty * item.price, 0);
 
               return (
                 <tr key={order.id} className="border-t hover:bg-[#fffaf5]">
@@ -98,7 +118,7 @@ const OrderManagement = () => {
                   <td className="p-3">{order.contact}</td>
                   <td className="p-3">
                     <ul className="list-disc list-inside space-y-1">
-                      {order.items.map((item, i) => (
+                      {items.map((item, i) => (
                         <li key={i}>
                           {item.name} × {item.qty}
                         </li>

@@ -1,236 +1,157 @@
-import React, { useState } from 'react';
-
+import { useEffect, useState } from "react";
+import { supabase } from "./supabase";
 const FeedbackFAQAdmin = () => {
-  const [feedbacks, setFeedbacks] = useState([
-    {
-      id: 1,
-      customer: 'Dian Rahma',
-      email: 'dian@email.com',
-      message: 'Pengiriman terlalu lama.',
-      status: 'Belum Selesai',
-      reply: '',
-    },
-    {
-      id: 2,
-      customer: 'Andi Wijaya',
-      email: 'andi@email.com',
-      message: 'Produk tidak sesuai deskripsi.',
-      status: 'Selesai',
-      reply: 'Kami mohon maaf atas ketidaknyamanannya. Kami akan menindaklanjuti.',
-    },
-    {
-      id: 3,
-      customer: 'Sinta Dewi',
-      email: 'sinta@email.com',
-      message: 'Website sering error saat checkout.',
-      status: 'Belum Selesai',
-      reply: '',
-    },
-  ]);
-
-  const [faqs, setFaqs] = useState([
-    {
-      id: 1,
-      question: 'Bagaimana cara reset password?',
-      answer: 'Klik "Lupa Password" saat login, lalu ikuti instruksi.',
-    },
-  ]);
-
-  const [newFAQ, setNewFAQ] = useState({ question: '', answer: '' });
-  const [replyModal, setReplyModal] = useState({ open: false, feedbackId: null, replyText: '' });
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [faqs, setFaqs] = useState([]);
+  const [newFAQ, setNewFAQ] = useState({ question: "", answer: "" });
   const [showFAQForm, setShowFAQForm] = useState(false);
+  const [replyModal, setReplyModal] = useState({ open: false, id: null, replyText: "" });
 
-  const handleAddFAQ = () => {
-    if (newFAQ.question && newFAQ.answer) {
-      setFaqs([...faqs, { ...newFAQ, id: Date.now() }]);
-      setNewFAQ({ question: '', answer: '' });
-    }
+  useEffect(() => {
+    fetchFeedback();
+    fetchFAQ();
+  }, []);
+
+  const fetchFeedback = async () => {
+    const { data } = await supabase.from("feedback").select("*").order("created_at", { ascending: false });
+    setFeedbacks(data || []);
   };
 
-  const openReplyModal = (id) => {
-    const fb = feedbacks.find((f) => f.id === id);
-    setReplyModal({ open: true, feedbackId: id, replyText: fb.reply || '' });
+  const fetchFAQ = async () => {
+    const { data } = await supabase.from("faq").select("*").order("created_at", { ascending: false });
+    setFaqs(data || []);
   };
 
-  const submitReply = () => {
-    setFeedbacks((prev) =>
-      prev.map((f) =>
-        f.id === replyModal.feedbackId
-          ? { ...f, reply: replyModal.replyText, status: 'Selesai' }
-          : f
-      )
-    );
-    setReplyModal({ open: false, feedbackId: null, replyText: '' });
+  const submitReply = async () => {
+    await supabase
+      .from("feedback")
+      .update({ reply: replyModal.replyText, status: "Selesai" })
+      .eq("id", replyModal.id);
+    setReplyModal({ open: false, id: null, replyText: "" });
+    fetchFeedback();
   };
 
-  // STATISTICS
+  const handleAddFAQ = async () => {
+    if (!newFAQ.question || !newFAQ.answer) return;
+    await supabase.from("faq").insert([newFAQ]);
+    setNewFAQ({ question: "", answer: "" });
+    setShowFAQForm(false);
+    fetchFAQ();
+  };
+
   const total = feedbacks.length;
   const selesai = feedbacks.filter((f) => f.status === "Selesai").length;
-  const belumSelesai = feedbacks.filter((f) => f.status === "Belum Selesai").length;
+  const belum = total - selesai;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fff6ec] to-[#fdf6f1] py-10 px-6 shadow-lg rounded-xl">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold mb-8 text-[#4b2e2b] text-center">
-          Feedback & FAQ Management
-        </h2>
+    <div className="max-w-6xl mx-auto p-6 bg-white rounded-xl shadow">
+      <h2 className="text-3xl font-bold text-[#4b2e2b] mb-6 text-center">Feedback & FAQ Admin</h2>
 
-        {/* Cards Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-md p-6 text-center">
-            <h4 className="text-lg font-semibold text-[#4b2e2b]">Total Komplain</h4>
-            <p className="text-3xl font-bold text-[#a35f2a]">{total}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-6 text-center">
-            <h4 className="text-lg font-semibold text-green-700">Selesai</h4>
-            <p className="text-3xl font-bold text-green-600">{selesai}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-6 text-center">
-            <h4 className="text-lg font-semibold text-yellow-700">Belum Selesai</h4>
-            <p className="text-3xl font-bold text-yellow-600">{belumSelesai}</p>
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-[#f3e7d8] p-4 rounded text-center">
+          <h4>Total</h4><p className="text-2xl font-bold">{total}</p>
         </div>
-
-        {/* Feedback Table */}
-        <div className="mb-12">
-          <h3 className="text-xl font-semibold mb-4 text-[#a35f2a]">Daftar Feedback</h3>
-          <div className="overflow-x-auto bg-white rounded-xl shadow-md">
-            <table className="min-w-full text-sm">
-              <thead className="bg-[#f4e8dc] text-[#4b2e2b]">
-                <tr>
-                  <th className="p-4 text-left">Nama</th>
-                  <th className="p-4 text-left">Email</th>
-                  <th className="p-4 text-left">Pesan</th>
-                  <th className="p-4 text-center">Status</th>
-                  <th className="p-4 text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {feedbacks.map((fb, index) => (
-                  <tr
-                    key={fb.id}
-                    className={`${index % 2 === 0 ? 'bg-[#fffdfc]' : 'bg-[#fff9f5]'} hover:bg-[#f8f2ee]`}
-                  >
-                    <td className="p-4 border-b border-[#e8d8c5]">{fb.customer}</td>
-                    <td className="p-4 border-b border-[#e8d8c5]">{fb.email}</td>
-                    <td className="p-4 border-b border-[#e8d8c5]">{fb.message}</td>
-                    <td className="p-4 border-b border-[#e8d8c5] text-center">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${fb.status === 'Selesai'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                      >
-                        {fb.status}
-                      </span>
-                    </td>
-                    <td className="p-4 border-b border-[#e8d8c5] text-center">
-                      <button
-                        onClick={() => openReplyModal(fb.id)}
-                        className="bg-[#d3a170] hover:bg-[#a35f2a] text-white text-sm px-4 py-1 rounded"
-                      >
-                        Balas
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="bg-green-100 p-4 rounded text-center">
+          <h4>Selesai</h4><p className="text-2xl font-bold">{selesai}</p>
         </div>
-
-        {/* FAQ Section */}
-        <div className="mb-10">
-          <h3 className="text-xl font-semibold mb-4 text-[#36687c]">Daftar FAQ</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-            {faqs.map((faq) => (
-              <div
-                key={faq.id}
-                className="bg-[#f0f8fc] border border-blue-100 rounded-lg p-4 shadow-sm"
-              >
-                <h4 className="font-semibold text-[#2c5777] mb-1">Q: {faq.question}</h4>
-                <p className="text-gray-700">A: {faq.answer}</p>
-              </div>
-            ))}
-          </div>
-
-          {!showFAQForm && (
-            <button
-              onClick={() => setShowFAQForm(true)}
-              className="bg-[#36687c] hover:bg-[#2a4f65] text-white px-4 py-2 rounded"
-            >
-              Buat FAQ Baru
-            </button>
-          )}
-
-          {showFAQForm && (
-            <div className="bg-white rounded-lg shadow-md p-4 mt-4">
-              <h4 className="font-semibold text-[#2c5777] mb-3">Tambah FAQ Baru</h4>
-              <input
-                type="text"
-                placeholder="Pertanyaan"
-                value={newFAQ.question}
-                onChange={(e) => setNewFAQ({ ...newFAQ, question: e.target.value })}
-                className="w-full border border-gray-300 rounded p-2 mb-3"
-              />
-              <textarea
-                placeholder="Jawaban"
-                rows={3}
-                value={newFAQ.answer}
-                onChange={(e) => setNewFAQ({ ...newFAQ, answer: e.target.value })}
-                className="w-full border border-gray-300 rounded p-2 mb-3"
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => {
-                    setNewFAQ({ question: '', answer: '' });
-                    setShowFAQForm(false);
-                  }}
-                  className="px-4 py-2 border border-gray-400 rounded hover:bg-gray-100"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => {
-                    handleAddFAQ();
-                    setShowFAQForm(false);
-                  }}
-                  className="bg-[#36687c] hover:bg-[#2a4f65] text-white px-4 py-2 rounded"
-                >
-                  Tambah FAQ
-                </button>
-              </div>
-            </div>
-          )}
+        <div className="bg-yellow-100 p-4 rounded text-center">
+          <h4>Belum</h4><p className="text-2xl font-bold">{belum}</p>
         </div>
       </div>
 
-      {/* Modal Balas */}
-      {replyModal.open && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h4 className="text-lg font-semibold mb-2 text-[#4b2e2b]">Balas Feedback</h4>
-            <textarea
-              rows={4}
-              value={replyModal.replyText}
-              onChange={(e) =>
-                setReplyModal({ ...replyModal, replyText: e.target.value })
-              }
-              className="w-full border border-gray-300 rounded p-2"
-              placeholder="Tulis balasan di sini..."
+      {/* Table Feedback */}
+      <h3 className="text-xl font-semibold text-[#a35f2a] mb-2">Daftar Feedback</h3>
+      <div className="overflow-x-auto mb-6">
+        <table className="min-w-full text-sm bg-white border">
+          <thead className="bg-[#f4e8dc]">
+            <tr>
+              <th className="p-2 text-left">Nama</th>
+              <th className="p-2">Email</th>
+              <th className="p-2">Pesan</th>
+              <th className="p-2">Status</th>
+              <th className="p-2">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {feedbacks.map((fb) => (
+              <tr key={fb.id} className="border-t">
+                <td className="p-2">{fb.customer}</td>
+                <td className="p-2">{fb.email}</td>
+                <td className="p-2">{fb.message}</td>
+                <td className="p-2">{fb.status}</td>
+                <td className="p-2 text-center">
+                  <button
+                    onClick={() => setReplyModal({ open: true, id: fb.id, replyText: fb.reply || "" })}
+                    className="bg-[#d3a170] text-white px-3 py-1 rounded"
+                  >
+                    Balas
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="mb-10">
+        <h3 className="text-xl font-semibold text-[#4b2e2b] mb-2">FAQ</h3>
+        <ul className="space-y-3">
+          {faqs.map((faq) => (
+            <li key={faq.id} className="bg-[#f0f8fc] p-4 rounded border border-blue-100">
+              <p><strong>Q:</strong> {faq.question}</p>
+              <p className="text-sm text-gray-700 mt-1"><strong>A:</strong> {faq.answer}</p>
+            </li>
+          ))}
+        </ul>
+
+        {/* Tambah FAQ */}
+        {showFAQForm ? (
+          <div className="mt-4 bg-white p-4 border rounded">
+            <input
+              type="text"
+              placeholder="Pertanyaan"
+              value={newFAQ.question}
+              onChange={(e) => setNewFAQ({ ...newFAQ, question: e.target.value })}
+              className="w-full mb-2 p-2 border rounded"
             />
-            <div className="flex justify-end mt-4 space-x-2">
-              <button
-                onClick={() => setReplyModal({ open: false, feedbackId: null, replyText: '' })}
-                className="px-4 py-2 border border-gray-400 rounded hover:bg-gray-100"
-              >
+            <textarea
+              placeholder="Jawaban"
+              value={newFAQ.answer}
+              onChange={(e) => setNewFAQ({ ...newFAQ, answer: e.target.value })}
+              className="w-full p-2 border rounded mb-2"
+              rows={3}
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setShowFAQForm(false)} className="border px-4 py-1 rounded">Batal</button>
+              <button onClick={handleAddFAQ} className="bg-[#36687c] text-white px-4 py-1 rounded">Simpan</button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={() => setShowFAQForm(true)} className="bg-[#36687c] text-white px-4 py-2 rounded mt-4">
+            Tambah FAQ Baru
+          </button>
+        )}
+      </div>
+
+      {/* Modal Balasan */}
+      {replyModal.open && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow w-full max-w-md">
+            <h4 className="text-lg font-semibold mb-2">Balas Feedback</h4>
+            <textarea
+              className="w-full p-2 border rounded"
+              value={replyModal.replyText}
+              onChange={(e) => setReplyModal({ ...replyModal, replyText: e.target.value })}
+              rows={4}
+            />
+            <div className="flex justify-end gap-2 mt-3">
+              <button onClick={() => setReplyModal({ open: false, id: null, replyText: "" })} className="border px-4 py-1 rounded">
                 Batal
               </button>
-              <button
-                onClick={submitReply}
-                className="px-4 py-2 bg-[#d3a170] text-white rounded hover:bg-[#a35f2a]"
-              >
-                Kirim Balasan
+              <button onClick={submitReply} className="bg-[#a35f2a] text-white px-4 py-1 rounded">
+                Kirim
               </button>
             </div>
           </div>

@@ -41,7 +41,7 @@ export default function Login() {
         navigate("/dashboard/admin");
       } else if (email === "rima@gmail.com" && password === "rima123") {
         localStorage.setItem("user", JSON.stringify({ email, role: "user" }));
-        navigate("/dashboard/customer");
+        navigate("/customer");
       } else {
         setError("Email atau password salah.");
       }
