@@ -18,8 +18,8 @@ const menuItems = [
     { name: "Belanja", path: "/customer/belanja", icon: <ShoppingBag /> },
     { name: "Riwayat Transaksi", path: "/customert/riwayat-transaksi", icon: <History /> },
     { name: "Komplain", path: "/customer/complain", icon: <MessageCircle /> },
-    { name: "Profil", path: "/customer/profil", icon: <User /> },
-    { name: "Customer Chat", path: "/customer/chat", icon: <User /> },
+    // { name: "Profil", path: "/customer/profil", icon: <User /> },
+    // { name: "Customer Chat", path: "/customer/chat", icon: <User /> },
 
 ];
 
